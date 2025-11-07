@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ],
     pageLength: 5,
     ordering: true,
-    searching: true,
+    searching: false,
     lengthChange: false,
     language: {
       search: "검색:",
