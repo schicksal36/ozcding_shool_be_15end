@@ -11,10 +11,11 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
 
   <!-- ✅ [8] Custom CSS (사용자 정의 스타일 파일) -->
-  <link rel="stylesheet" href="./public/styles/admin.css">
+  <link rel="stylesheet" href="./styles/admin.css">
 </head>
 
 <body>
+  
   <!-- [9] 다크모드 전환 버튼 -->
   <button id="darkToggle" class="btn btn-outline-dark">🌙 다크모드</button>
 
@@ -52,7 +53,10 @@
 
       <!-- [18] 회원가입 버튼 -->
       <div class="col-auto">
-        <button type="button" class="btn btn-success" id="signupBtn">회원가입</button>
+        <button type="button" class="btn btn-success" onclick="location.href='signup.html'">
+  회원가입
+</button>
+
       </div>
     </form>
 
@@ -71,43 +75,6 @@
       </table>
       <!-- [21] 회원가입 입력 폼 (숨김/표시 전환) -->
 <div class="signup-card" id="signupCard">
-
-  <h5 class="text-center mb-3">회원가입</h5>
-
-  <input type="text" id="userid" class="form-control mb-2" placeholder="아이디 입력">
-  <input type="password" id="password" class="form-control mb-2" placeholder="비밀번호 입력 (6자 이상)">
-  <input type="password" id="password2" class="form-control mb-2" placeholder="비밀번호 확인">
-
-  <input type="text" id="username" class="form-control mb-2" placeholder="이름 입력">
-  <input type="tel" id="phone" class="form-control mb-2" placeholder="전화번호 (010-0000-0000)">
-  
-  <select id="job" class="form-select mb-2">
-    <option value="">희망 직무 선택</option>
-    <option>개발</option>
-    <option>디자인</option>
-    <option>마케팅</option>
-    <option>기타</option>
-  </select>
-
-  <div class="d-flex align-items-center justify-content-center mb-2">
-    <label class="me-2">성별 :</label>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="radio" name="gender" id="male" value="남자">
-      <label class="form-check-label" for="male">남자</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="radio" name="gender" id="female" value="여자">
-      <label class="form-check-label" for="female">여자</label>
-    </div>
-  </div>
-
-  <input type="email" id="email" class="form-control mb-2" placeholder="이메일 입력">
-
-  <textarea id="intro" class="form-control mb-3" rows="3" placeholder="자기소개를 입력하세요"></textarea>
-
-  <button id="submitSignup" class="btn btn-primary w-100">가입하기</button>
-</div>
-
 
   <!-- ✅ [22] 자바스크립트 라이브러리 로드 -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery: DataTables와 DOM 조작용 -->

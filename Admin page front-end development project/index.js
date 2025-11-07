@@ -12,11 +12,44 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   const categorySelect = document.getElementById("inlineFormSelectPref");
   const darkToggle = document.getElementById("darkToggle");
-  const signupBtn = document.getElementById("signupBtn");
-  const signupCard = document.getElementById("signupCard");
-  const submitSignup = document.getElementById("submitSignup");
 
-  // ✅ DataTable 초기화
+  // ✅ 다크모드 상태 저장 및 복원
+  if (localStorage.getItem("darkMode") === "true") {
+    document.body.classList.add("dark-mode");
+  }
+
+  function updateDarkLabel() {
+    darkToggle.textContent = document.body.classList.contains("dark-mode")
+      ? "☀ 라이트모드"
+      : "🌙 다크모드";
+  }
+  updateDarkLabel();
+
+  darkToggle.addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    const isDark = document.body.classList.contains("dark-mode");
+    localStorage.setItem("darkMode", isDark);
+    updateDarkLabel();
+  });
+
+  // ✅ 시계
+  function updateClock() {
+    const n = new Date();
+    const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    const y = n.getFullYear();
+    const m = String(n.getMonth() + 1).padStart(2, "0");
+    const d = String(n.getDate()).padStart(2, "0");
+    const h = String(n.getHours()).padStart(2, "0");
+    const min = String(n.getMinutes()).padStart(2, "0");
+    const s = String(n.getSeconds()).padStart(2, "0");
+    const w = days[n.getDay()];
+    document.getElementById("clock").textContent = 
+      `🕒 ${y}년 ${m}월 ${d}일 ${h}시${min}분 ${s}초 (${w})`;
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ✅ 테이블 초기화
   const table = $("#product_data_Table").DataTable({
     data: product_data,
     columns: [
@@ -51,74 +84,52 @@ document.addEventListener("DOMContentLoaded", () => {
     table.clear().rows.add(filtered).draw();
   });
 
-  // ✅ 다크모드 토글
-  function updateDarkLabel() {
-    darkToggle.textContent = document.body.classList.contains("dark-mode")
-      ? "☀ 라이트모드"
-      : "🌙 다크모드";
-  }
-  updateDarkLabel();
-  darkToggle.addEventListener("click", () => {
-    document.body.classList.toggle("dark-mode");
-    updateDarkLabel();
-  });
+  // ✅ 회원가입 관련 요소(존재할 때만 실행)
+  const signupBtn = document.getElementById("signupBtn");
+  const signupCard = document.getElementById("signupCard");
+  const submitSignup = document.getElementById("submitSignup");
 
-  // ✅ 시계
-  function updateClock() {
-    const n = new Date();
-    const days = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
-    const y = n.getFullYear();
-    const m = String(n.getMonth() + 1).padStart(2, "0");
-    const d = String(n.getDate()).padStart(2, "0");
-    const h = String(n.getHours()).padStart(2, "0");
-    const min = String(n.getMinutes()).padStart(2, "0");
-    const s = String(n.getSeconds()).padStart(2, "0");
-    const w = days[n.getDay()];
-    document.getElementById("clock").textContent = `🕒 ${y}년 ${m}월 ${d}일 ${h}시${min}분 ${s}초 (${w})`;
-  }
-  setInterval(updateClock, 1000);
-  updateClock();
-
-  // ✅ 회원가입 폼 토글
-  signupCard.style.display = "none";
-  signupBtn.addEventListener("click", () => {
-    const isOpen = signupCard.style.display === "block";
-    signupCard.style.display = isOpen ? "none" : "block";
-    signupBtn.textContent = isOpen ? "회원가입" : "닫기";
-  });
-
-  // ✅ 회원가입 입력 검증
-  submitSignup.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const userid = document.getElementById("userid").value.trim();
-    const pw = document.getElementById("password").value.trim();
-    const pw2 = document.getElementById("password2").value.trim();
-    const username = document.getElementById("username").value.trim();
-    const email = document.getElementById("email").value.trim();
-
-    if (!userid || !pw || !pw2 || !username || !email) {
-      alert("⚠️ 모든 항목을 입력해주세요!");
-      return;
-    }
-    if (pw.length < 6) {
-      alert("⚠️ 비밀번호는 6자 이상이어야 합니다!");
-      return;
-    }
-    if (pw !== pw2) {
-      alert("⚠️ 비밀번호가 일치하지 않습니다!");
-      return;
-    }
-    if (!email.includes("@") || !email.includes(".")) {
-      alert("⚠️ 이메일 형식이 올바르지 않습니다!");
-      return;
-    }
-
-    alert(`✅ 회원가입 완료!\n아이디: ${userid}\n이름: ${username}\n이메일: ${email}`);
-    
-    // 입력 초기화
-    document.querySelectorAll("#signupCard input, #signupCard textarea").forEach(el => el.value = "");
+  if (signupBtn && signupCard) {
     signupCard.style.display = "none";
-    signupBtn.textContent = "회원가입";
-  });
+    signupBtn.addEventListener("click", () => {
+      const isOpen = signupCard.style.display === "block";
+      signupCard.style.display = isOpen ? "none" : "block";
+      signupBtn.textContent = isOpen ? "회원가입" : "닫기";
+    });
+  }
+
+  if (submitSignup) {
+    submitSignup.addEventListener("click", (e) => {
+      e.preventDefault();
+
+      const userid = document.getElementById("userid").value.trim();
+      const pw = document.getElementById("password").value.trim();
+      const pw2 = document.getElementById("password2").value.trim();
+      const username = document.getElementById("username").value.trim();
+      const email = document.getElementById("email").value.trim();
+
+      if (!userid || !pw || !pw2 || !username || !email) {
+        alert("⚠️ 모든 항목을 입력해주세요!");
+        return;
+      }
+      if (pw.length < 6) {
+        alert("⚠️ 비밀번호는 6자 이상이어야 합니다!");
+        return;
+      }
+      if (pw !== pw2) {
+        alert("⚠️ 비밀번호가 일치하지 않습니다!");
+        return;
+      }
+      if (!email.includes("@") || !email.includes(".")) {
+        alert("⚠️ 이메일 형식이 올바르지 않습니다!");
+        return;
+      }
+
+      alert(`✅ 회원가입 완료!\n아이디: ${userid}\n이름: ${username}\n이메일: ${email}`);
+
+      document.querySelectorAll("#signupCard input, #signupCard textarea").forEach(el => el.value = "");
+      signupCard.style.display = "none";
+      signupBtn.textContent = "회원가입";
+    });
+  }
 });
