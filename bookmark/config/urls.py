@@ -1,23 +1,11 @@
-"""
-URL configuration for config project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/6.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
+from django.shortcuts import redirect, render
 from django.urls import path
-from django.http import HttpResponse, Http404
-from django.shortcuts import render, redirect
+from django.http import Http404, HttpResponse
+
+from bookmark import views
+
+
 # [동작원리-0] 위 import들은 "서버가 켜질 때" (python manage.py runserver) 한 번 실행됨.
 #             즉, 브라우저 요청이 올 때마다 실행되는 게 아니라,
 #             Django가 프로젝트를 로딩할 때 실행되어 준비 상태를 만든다.
@@ -145,38 +133,22 @@ def gugu(request, num):
 
 # -------------------------
 # URL ↔ View 연결부 (라우터)
-# -------------------------
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # [동작원리-16] /admin/ 요청이면 Django가 제공하는 admin 사이트로 연결
 
     path('', index),
-    # [동작원리-17] / 요청이면 index(request) 실행
-
     path('book_list/', book_list),
-    # [동작원리-18] /book_list/ 요청이면 book_list(request) 실행
-
     path('book/<int:num>/', book),
-    # [동작원리-19] /book/3/ 요청이면 Django가 3을 뽑아서 book(request, 3) 호출
 
     path('language/<str:lang>/', language),
-    # [동작원리-20] /language/ko/ 요청이면 language(request, "ko") 호출
 
     path('movie/', movie),
-    # [동작원리-21] /movie/ 요청이면 movie(request) 호출
-
     path('movie/<int:index>/', movie_detail),
-    # [동작원리-22] /movie/1/ 요청이면 movie_detail(request, 1) 호출
 
     path('gugu/', lambda request: redirect('gugu', num=2)),
-    # [동작원리-23] /gugu/ 요청은 숫자가 없어서 원래는 매칭이 애매함.
-    #             그래서 "기본값 페이지"로 보내기 위해 강제 redirect를 둔 것.
-    #             lambda는 "이 자리에서만 쓰는 1회용 view 함수"라고 생각하면 된다.
-
     path('gugu/<int:num>/', gugu, name='gugu'),
-    # [동작원리-24] /gugu/5/ 요청이면 gugu(request, 5) 실행
-    #             name='gugu' 덕분에 redirect('gugu', num=2) 같은 "이름 기반 이동"이 가능해진다.
+
+    path('bookmark/', views.bookmark_list),
+    path('bookmark/<int:num>/', views.bookmark_detail),
 ]
-# [동작원리-25] urlpatterns 자체는 "서버가 켜질 때" 한 번 로딩되어 URL 매칭표를 만든다.
-#             요청이 들어오면 Django는 이 표를 위에서 아래로 순서대로 비교해서
-#             "처음으로 매칭되는" path의 view를 실행한다.
