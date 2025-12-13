@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>오늘의 일기 - 로그인</title>
+  <link rel="stylesheet" href="/static/auth.css">
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+
+      <h1>🌿 오늘의 일기</h1>
+      <p class="subtitle">나만의 소중한 기록</p>
+
+      <!-- 🔄 탭 -->
+      <div class="tabs">
+        <button id="loginTab" class="active">로그인</button>
+        <button id="signupTab">회원가입</button>
+      </div>
+
+      <!-- ✅ 로그인 폼 (username 로그인) -->
+      <form id="loginForm">
+        <label>닉네임</label>
+        <input type="text" id="loginUsername" required>
+
+        <label>비밀번호</label>
+        <input type="password" id="loginPassword" required>
+
+        <button type="submit" class="login-btn">로그인</button>
+      </form>
+
+      <!-- ✅ 회원가입 폼 -->
+      <form id="signupForm" style="display:none;">
+        <label>이메일</label>
+        <input type="email" id="signupEmail" required>
+
+        <label>닉네임</label>
+        <input type="text" id="signupUsername" required>
+
+        <label>비밀번호</label>
+        <input type="password" id="signupPassword" required>
+
+        <label>비밀번호 확인</label>
+        <input type="password" id="signupPasswordConfirm" required>
+
+        <button type="submit" class="login-btn">회원가입</button>
+      </form>
+
+      <p id="error"></p>
+
+    </div>
+  </div>
+
+  <script src="/static/auth.js"></script>
+</body>
+</html>
