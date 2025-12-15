@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ dan }}단</title>
+</head>
+<body>
+
+<h1>{{ dan }}단</h1>
+
+<ul>
+    {% for result in results %}
+        <li>{{ dan }} × {{ forloop.counter }} = {{ result }}</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

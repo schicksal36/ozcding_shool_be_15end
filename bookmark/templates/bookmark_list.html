@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>북마크 목록</title>
+</head>
+<body>
+
+    <h1>📌 북마크 리스트 페이지 입니다.</h1>
+
+    {# ------------------------------------------ #}
+    {# bookmarks : views.py에서 전달된 QuerySet #}
+    {# ------------------------------------------ #}
+
+    {% for bookmark in bookmarks %}
+        <p>
+            <!-- bookmark.url : 모델의 URL 필드 -->
+            <a href="{{ bookmark.url }}">
+                {{ bookmark.name }} ({{bookmark.id}})
+            </a>
+        </p>
+    {% endfor %}
+
+</body>
+</html>
