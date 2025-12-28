@@ -1,38 +1,84 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>blog_detail</title>
-</head>
-<body>
+{% extends 'base.html' %}
 
-<h1>{{ blog.title }}</h1>
-{% if request.user == blog.author %}
-<!-- 수정 버튼 (오른쪽 정렬) -->
-<div style="text-align: right">
-    <a href="{% url 'blog_update' blog.pk %}">수정</a>
-    <!--
-     <a href="{% url 'blog_delete' blog.pk %}">삭제</a>
-    -->
-     <form action="{% url 'blog_delete' blog.pk %}" method="POST" style="display: inline;">
-        {% csrf_token %}
-        <button>삭제</button>
-     </form>
+{% block content %}
+<div class="mt-2 d-flex justify-content-between">
+    <h1 class="text-center mt-2">{{ object.title }}</h1>
 
-</div>
-{% endif %}
-<!-- 작성자 -->
-<div>
-    {{ blog.author.username }}
+    {% if request.user == object.author or request.user.is_superuser %}
+    <div>
+        {{ object.author.username }}
+        <a class="btn btn-sm btn-warning" href="{% url 'blog:update' object.pk %}">
+            수정
+        </a>
+        <form id="delete_form"
+              action="{% url 'blog:delete' object.pk %}"
+              method="post"
+              style="display:inline;">
+            {% csrf_token %}
+            <button type="button"
+                    id="delete_btn"
+                    class="btn btn-sm btn-danger">
+                삭제
+            </button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 
 <hr>
 
-<!-- 본문 -->
-<p>{{ blog.content }}</p>
+<!-- 본문 (HTML 포함 렌더링) -->
+<p>{{ object.content|safe }}</p>
 
-<a href="{% url 'blog_list' %}">블로그 목록</a>
+<hr>
 
-</body>
-</html>
+{% if request.user.is_authenticated %}
+<form method="post"
+      action="{% url 'blog:comment_create' object.pk %}"
+      class="d-flex align-items-center gap-2"
+      style="width: 100%; max-width: 1000px;">
+    {% csrf_token %}
+    <div class="input-group">
+        {{ comment_form.content }}
+        <button class="btn btn-primary" type="submit">
+            작성
+        </button>
+    </div>
+</form>
+{% endif %}
+
+<hr>
+
+<div class="mb-2" id="comment_wrapper">
+    {% for comment in object.comments.all %}
+    <div class="border-bottom py-2">
+        {{ comment.content }}
+        <p class="text-end mb-1">
+            <small>
+                {{ comment.author.username }} |
+                {{ comment.created_at|date:'Y-m-d H:i' }}
+            </small>
+        </p>
+    </div>
+    {% empty %}
+        <p>아직 댓글이 없습니다.</p>
+    {% endfor %}
+</div>
+
+{% include 'pagination.html' with fragment='comment_wrapper' %}
+
+<a class="btn btn-sm btn-info mt-2" href="{% url 'blog:list' %}">
+    목록
+</a>
+
+<script>
+    const deleteBtn = document.querySelector('#delete_btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function () {
+            if (confirm('삭제 하시겠습니까?')) {
+                document.querySelector('#delete_form').submit();
+            }
+        });
+    }
+</script>
+{% endblock %}

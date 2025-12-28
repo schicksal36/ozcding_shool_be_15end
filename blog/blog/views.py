@@ -1,212 +1,139 @@
-# ================================
-# Django 기본
-# ================================
-from django.contrib.auth.decorators import login_required
+# ==================== 상세 주석 및 코드 설명 ====================
+# 1. 필요한 Django 라이브러리 및 로컬 모듈 임포트
+from django.contrib.auth.decorators import login_required  # 로그인 여부 확인
+from django.core.paginator import Paginator                # 페이지네이션(글 나누기)
+from django.shortcuts import render, get_object_or_404, redirect  # 템플릿 랜더, 객체 조회 등
+from django.urls import reverse                            # URL 이름으로 실제 경로 생성
+from django.views.decorators.http import require_http_methods  # HTTP 메서드 제한
+from django.db.models import Q                             # 복잡한 조건(검색 등) 지원
 
-# 로그인하지 않은 사용자의 접근을 막고,
-# 인증되지 않았으면 LOGIN_URL로 자동 리다이렉트함
+from blog.forms import BlogForm                             # 폼 기반 글 작성/수정
+from .models import Blog                                   # 블로그 모델
 
-from django.core.paginator import Paginator
-
-# QuerySet을 페이지 단위로 분리해주는 Django 내장 클래스
-
-from django.http import Http404
-
-# HTTP 404(Not Found) 예외 클래스 (현재는 주석 처리된 코드에서만 사용)
-
-from django.shortcuts import render, get_object_or_404, redirect
-
-# render            : 템플릿을 HTML로 렌더링하여 HttpResponse 반환
-# get_object_or_404 : 객체가 없으면 자동으로 404 응답
-# redirect          : 다른 URL로 이동시키는 응답 반환
-
-from django.urls import reverse
-
-# URL name을 실제 URL 문자열로 변환하는 함수
-
-from django.views.decorators.http import require_http_methods
-
-# 허용할 HTTP 메서드(GET, POST 등)를 제한하는 데코레이터
-
-# ================================
-# Django ORM
-# ================================
-from django.db.models import Q
-
-# OR 조건 검색을 가능하게 해주는 ORM 객체
-
-# ================================
-# 로컬 앱
-# ================================
-from blog.form import BlogForm
-
-# Blog 모델과 연결된 Form 클래스 (글 생성/수정용)
-
-from .models import Blog
-
-# Blog 테이블과 매핑된 Django ORM 모델
-
-
+# ==================== 1. 블로그 글 목록 ===========================
 def blog_list(request):
     """
-    [블로그 목록 페이지]
-    -------------------------------------------------------------------------
-    1. 전체 블로그 글을 DB에서 조회
-    2. 검색어(qwer)가 있으면 제목/내용/작성자 기준으로 필터링
-    3. Paginator를 이용해 페이지네이션 처리
-    4. 목록 템플릿으로 데이터 전달
-    -------------------------------------------------------------------------
+    블로그 글 목록 화면 (검색 및 페이지네이션 지원).
     """
-
-    # Blog 테이블의 모든 데이터를 작성일 기준 오름차순으로 조회
+    # (1) 전체 Blog 객체를 created_at(작성 시간) 기준으로 오름차순 정렬해서 가져온다.
     blogs = Blog.objects.all().order_by("created_at")
 
-    # GET 파라미터에서 검색어(qwer) 추출
+    # (2) 주소창에서 전달된 qwer 파라미터(검색어)를 추출한다. (ex: ?qwer=hello)
     qwer = request.GET.get("qwer")
 
-    # 검색어가 있을 경우 OR 조건으로 필터링
+    # (3) 검색어가 있다면 제목/내용/작성자(username)에 해당 단어가 포함된 블로그만 걸러낸다(OR조합).
     if qwer:
         blogs = blogs.filter(
-            Q(title__icontains=qwer)
-            | Q(content__icontains=qwer)
-            | Q(author__username__icontains=qwer)
+            Q(title__icontains=qwer) |
+            Q(content__icontains=qwer) |
+            Q(author__username__icontains=qwer)
         )
 
-    # 페이지네이션 객체 생성 (한 페이지당 10개씩)
+    # (4) Paginator를 사용해 블로그 목록을 10개씩 분할한다.
     paginator = Paginator(blogs, 10)
+    page = request.GET.get("page")         # ?page=2 처럼 전달된 페이지 번호 추출
 
-    # 현재 페이지 번호 (?page=숫자)
-    page = request.GET.get("page")
-
-    # 잘못된 페이지 번호가 들어와도 자동으로 처리해주는 메서드
+    # (5) 가져온 page 번호에 해당하는 글목록이 담긴 page_object 생성
     page_object = paginator.get_page(page)
 
-    # visits = int(request.COOKIES.get('visits', 0)) + 1
-    # request.session['count'] = request.session.get('count', 0) + 1
-
-    # 템플릿으로 전달할 데이터
+    # (6) 템플릿에 넘겨줄 데이터(Dictionary) 작성
     context = {
-        "page_object": page_object,
-        #'blogs': blogs,
-        #'visits': visits,
-        #'count': request.session['count'],
+        "object_list": page_object.object_list,  # 10개 글의 리스트
+        "page_object": page_object,              # 페이지네이션 객체(현재 몇 쪽, 이전/다음 등 정보)
     }
 
-    # HTML 템플릿을 렌더링하여 응답 생성
-    response = render(request, "blog_list.html", context)
-
-    # response.set_cookie('visits', visits)
-    return response
+    # (7) 렌더링할 템플릿/데이터와 함께 응답한다.
+    return render(request, "blog_list.html", context)
 
 
+# ==================== 2. 블로그 상세 정보(단일 글) ==================
 def blog_detail(request, pk):
     """
-    [블로그 상세 페이지]
-    -------------------------------------------------------------------------
-    1. URL로 전달받은 pk에 해당하는 블로그 글 조회
-    2. 글이 없으면 자동으로 404 응답
-    3. 상세 페이지 템플릿으로 전달
-    -------------------------------------------------------------------------
+    특정 블로그 글 상세 정보 페이지.
+    :param pk: 글의 primary key(고유 번호)
     """
-
-    # pk에 해당하는 Blog 객체를 조회, 없으면 404
+    # (1) pk(번호)에 해당하는 Blog 객체 1개를 가져온다. 없으면 404 오류.
     blog = get_object_or_404(Blog, pk=pk)
 
+    # (2) 템플릿에 전달할 데이터 구성
     context = {
-        "blog": blog,
+        "test": "TEST",  # 샘플 값을 template에 전달 (테스트용)
+        "blog": blog,    # 본문에 실제로 쓸 Blog 객체(글 주요내용)
     }
 
+    # (3) 해당 템플릿으로 응답
     return render(request, "blog_detail.html", context)
 
 
+# ==================== 3. 글 작성(로그인 필수) =======================
 @login_required()
 def blog_create(request):
     """
-    [블로그 글 작성]
-    -------------------------------------------------------------------------
-    1. 로그인한 사용자만 접근 가능
-    2. BlogForm을 통해 사용자 입력 처리
-    3. 작성자를 현재 로그인한 사용자로 설정
-    4. 저장 후 상세 페이지로 이동
-    -------------------------------------------------------------------------
+    블로그 새 글 작성 (로그인 사용자 전용).
+    GET : 빈 폼 보여줌
+    POST: 입력데이터 검증 후, 저장 & 상세화면으로 이동
     """
-
-    # POST 요청이면 데이터 바인딩, GET이면 빈 폼 생성
+    # (1) 사용자가 폼을 제출(POST)이면 데이터로 폼을 만들고, 아니면 빈 폼
     form = BlogForm(request.POST or None)
 
-    # 폼 유효성 검사
+    # (2) form 유효성 검사
     if form.is_valid():
-
-        # DB 저장 전 객체만 생성 (author 설정을 위해)
+        # (2-1) DB에 바로 저장하지 않고, 임시 Blog 객체를 생성
         blog = form.save(commit=False)
-
-        # 현재 로그인한 사용자를 작성자로 지정
+        # (2-2) 현재 로그인한 사용자를 작성자로 지정
         blog.author = request.user
-
-        # DB에 최종 저장
+        # (2-3) Blog 객체 실제 DB에 저장
         blog.save()
+        # (2-4) 작성 완료 후 상세페이지로 이동
+        return redirect(reverse("blog_detail", kwargs={"blog_pk": blog.pk}))
 
-        # 글 생성 후 해당 글의 상세 페이지로 이동
-        return redirect(reverse("blog_detail", kwargs={"pk": blog.pk}))
-
+    # (3) (처음 들어왔거나, 폼에 오류 있으면) 기존 입력값/폼 에러와 함께 폼 다시 렌더링
     context = {
         "form": form,
     }
+    return render(request, "blog_form.html", context)
 
-    return render(request, "blog_create.html", context)
 
-
+# ==================== 4. 글 수정(로그인+본인 글만) ===================
 @login_required()
 def blog_update(request, pk):
     """
-    [블로그 글 수정]
-    -------------------------------------------------------------------------
-    1. 로그인한 사용자만 접근 가능
-    2. 본인이 작성한 글만 수정 가능
-    3. 기존 글 데이터를 폼에 바인딩
-    4. 수정 완료 후 상세 페이지로 이동
-    -------------------------------------------------------------------------
+    블로그 글 수정(로그인+본인 글만 가능).
+    GET : 작성폼에 기존 글 데이터 있어야 함.
+    POST: 수정값 유효시 저장.
     """
-
-    # pk + author 조건으로 조회 → 남의 글 접근 차단
+    # (1) pk에 해당하는 Blog 글을 "본인이 썼는지" 체크해서 가져옴. 아니면 404.
     blog = get_object_or_404(Blog, pk=pk, author=request.user)
 
-    # 기존 데이터를 instance로 연결하여 수정 폼 생성
+    # (2) 요청이 POST이면 새 데이터, 아니면 기존 데이터로 폼 생성
     form = BlogForm(request.POST or None, instance=blog)
 
+    # (3) 폼 유효 검증
     if form.is_valid():
+        # (3-1) 수정된 내용을 실제로 저장
         blog = form.save()
+        # (3-2) 저장 후 상세화면 이동
         return redirect(reverse("blog_detail", kwargs={"pk": blog.pk}))
 
+    # (4) 폼 입력 미완/에러 시, 현재 데이터와 폼 다시 보여주기
     context = {
         "blog": blog,
         "form": form,
     }
+    return render(request, "blog_form.html", context)
 
-    return redirect(reverse, "blog_update.html", context)
 
-
+# ==================== 5. 글 삭제(로그인+본인 글만, POST만) ===========
 @login_required()
-@require_http_methods(["POST"])
+@require_http_methods(["POST"])     # POST 요청만 허용 (GET으로 삭제 X)
 def blog_delete(request, pk):
     """
-    [블로그 글 삭제]
-    -------------------------------------------------------------------------
-    1. 로그인한 사용자만 접근 가능
-    2. POST 요청만 허용
-    3. 본인이 작성한 글만 삭제 가능
-    4. 삭제 후 목록 페이지로 이동
-    -------------------------------------------------------------------------
+    블로그 글 삭제(로그인+본인 글만, POST요청만 가능).
+    :param pk: 글 번호
     """
-
-    # if request.method !='POST':
-    # raise Http404
-
-    # pk + author 조건으로 조회 → 권한 없는 삭제 차단
+    # (1) 작성자가 '나'인 글만 가져오며, 없으면 404
     blog = get_object_or_404(Blog, pk=pk, author=request.user)
-
-    # DB에서 해당 글 삭제
+    # (2) 실제 DB에서 글 삭제
     blog.delete()
-
-    # 삭제 후 블로그 목록 페이지로 이동
+    # (3) 삭제 후 목록 페이지로 이동
     return redirect(reverse("blog_list"))

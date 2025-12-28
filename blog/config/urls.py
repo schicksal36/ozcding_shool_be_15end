@@ -17,22 +17,74 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import include, path
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView, View
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.conf.urls.static import static
 
-from blog import views
+from blog import views,cb_views
+from blog.views import blog_list
+from blog.cb_views import (
+    BlogListView,
+    BlogDetailView,
+    BlogCreateView,
+)
+
 from member import views as member_views
+
+
+#class AboutView(TemplateView):
+    #template_name = "about.html"
+
+
+#class TestView(View):
+    #def get(self, request):
+        #return render(request, "test_get.html")
+    
+    #def post(self, request):
+        #return render(request, 'test_post.html')
+
+
 
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", views.blog_list, name="blog_list"),
-    path("<int:pk>/", views.blog_detail, name="blog_detail"),
-    path("create/", views.blog_create, name="blog_create"),
-    path("<int:pk>/update/", views.blog_update, name="blog_update"),
-    path("<int:pk>/delete/", views.blog_delete, name="blog_delete"),
+
+        # blog
+    path('',include('blog.urls')),
+        
     # auth
     path("accounts/", include("django.contrib.auth.urls")),
     path("signup/", member_views.sign_up, name="signup"),
     path("login/", member_views.login, name="login"),
-    path("about/", TemplateView.as_view(template_name="about.html"), name="about"),
-]
+    path('summernote/', include('django_summernote.urls'))
+
+
+
+
+    #FBV Blog
+    # blog
+    #path("", views.blog_list, name="blog_list"),
+    #path("create/", views.blog_create, name="blog_create"),
+    #path("<int:pk>/", views.blog_detail, name="blog_detail"),
+    #path("<int:pk>/update/", views.blog_update, name="blog_update"),
+    #path("<int:pk>/delete/", views.blog_delete, name="blog_delete"),
+
+    #CBV Blog
+    #path('' , cb_views.BlogListView.as_view(), name='blog_list'),
+    #path('<int:pk>/', cb_views.BlogDetailView.as_view(), name='blog_detail'),
+    #path('create/', cb_views.BlogCreateView.as_view(), name='blog_create'),
+    #path('<int:pk>/update/',cb_views.BlogUpdateView.as_view(),name ='blog_update'),
+    #path('<int:pk>/delete/',cb_views.BlogDeleteView.as_view(),name ='blog_delete'),
+
+    #path('about/',TemplateView.as_view(template_name='about.html'),name='about'),
+    #path('about/',AboutView.as_view(), name='about'),
+    #path('redirect/',RedirectView.as_view(pattern_name = 'about'),name = 'redirect'),
+    #path('test/', TestView.as_view(), name='test' )
+    ]
+
+if settings.DEBUG:
+    urlpatterns += static(
+        settings.MEDIA_URL,
+        document_root=settings.MEDIA_ROOT
+    )

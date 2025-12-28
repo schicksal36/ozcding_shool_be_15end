@@ -1,108 +1,23 @@
 from django.conf import settings
-
-# ✅ settings.py에 있는 설정값들을 가져오기 위한 모듈
-# - 여기서는 settings.AUTH_USER_MODEL(= "사용자 모델") 값을 쓰려고 import 함
-
 from django.db import models
+from django.urls import reverse
+from utils.model import TimestampModel
 
-# ✅ Django ORM의 모델(= DB 테이블 설계도)을 만들 때 쓰는 기본 모듈
-# - models.Model을 상속하면 "이 클래스 = DB 테이블"로 인식됨
 
-
-class Blog(models.Model):
-    """
-    =============================================================================
-    ✅ Blog 모델이 하는 일(정체)
-    -----------------------------------------------------------------------------
-    - Django ORM 모델 클래스
-    - 이 클래스 1개가 DB에서는 "테이블 1개"가 됨
-      (기본 테이블명: <앱이름>_<모델이름소문자>  예: blog_blog)
-
-    ✅ 동작 원리(큰 흐름)
-    -----------------------------------------------------------------------------
-    1) 이 파일에서 Blog(models.Model)을 정의한다.
-    2) python manage.py makemigrations
-       → Django가 "현재 모델 상태"를 보고 migration 파일(설계 변경 내역)을 만든다.
-    3) python manage.py migrate
-       → migration 내용을 DB에 반영해서 테이블/컬럼/제약조건을 생성/수정한다.
-    4) 이후 Blog.objects.create(), Blog.objects.filter() 같은 ORM 호출이
-       실제 SQL로 변환되어 DB에 실행된다.
-    =============================================================================
-    """
-
-    # =============================================================================
-    # ✅ CATEGORY_CHOICES: category 필드에서 선택 가능한 값 목록(choices)
-    # -----------------------------------------------------------------------------
-    # - DB에는 "저장값"이 들어가고 (예: "FREE")
-    # - 화면에는 "표시값"이 보임 (예: "자유게시판")
-    # - (저장값, 표시값) 형태의 튜플들의 튜플/리스트를 choices로 넣는다.
-    # - 장점:
-    #   1) category에 올 수 있는 값을 제한(유효성 검사)
-    #   2) 관리자 페이지 / 폼에서 드롭다운(select)으로 자동 표시
-    # =============================================================================
+class Blog(TimestampModel):
     CATEGORY_CHOICES = (
         ("FREE", "자유게시판"),
-        ("C", "C"),
-        ("PYTHON", "Python"),
-        ("JAVA", "Java"),
-        ("LINUX", "Linux 명령어"),
+        ("EMOTION", "감성글귀"),
     )
 
-    # =============================================================================
-    # ✅ category: 카테고리(문자열)
-    # -----------------------------------------------------------------------------
-    # - models.CharField: VARCHAR 같은 "짧은 문자열" 저장용 컬럼
-    # - max_length=10 : DB 컬럼 길이 제한(필수)
-    # - choices=CATEGORY_CHOICES:
-    #   저장 가능한 값이 위 choices의 "저장값" 중 하나로 제한됨
-    # - "카테고리" : 사람이 읽는 필드명(verbose_name)
-    # =============================================================================
     category = models.CharField(
         "카테고리",
         max_length=10,
         choices=CATEGORY_CHOICES,
+        default="FREE",
     )
-
-    # =============================================================================
-    # ✅ title: 제목(문자열)
-    # -----------------------------------------------------------------------------
-    # - CharField → DB의 VARCHAR
-    # - max_length=100 → 제목 길이 제한
-    # =============================================================================
     title = models.CharField("제목", max_length=100)
-
-    # =============================================================================
-    # ✅ content: 본문(긴 텍스트)
-    # -----------------------------------------------------------------------------
-    # - TextField → DB의 TEXT/LONGTEXT 같은 "긴 문자열" 컬럼
-    # - 길이 제한을 보통 두지 않음
-    # =============================================================================
     content = models.TextField("본문")
-
-    # =============================================================================
-    # ✅ author: 작성자(유저와의 관계)
-    # -----------------------------------------------------------------------------
-    # - ForeignKey = "다대일 관계"
-    #   (유저 1명은 글 여러 개 작성 가능 / 글 1개는 작성자 1명)
-    #
-    # - settings.AUTH_USER_MODEL:
-    #   프로젝트에서 사용하는 "유저 모델"을 가리키는 안전한 방법
-    #   (기본은 'auth.User'지만, 커스텀 유저로 바꿔도 이 코드는 그대로 동작)
-    #
-    # - on_delete=models.CASCADE:
-    #   작성자 유저가 삭제되면 → 그 유저의 글도 같이 삭제됨
-    #   (DB 레벨에서 삭제 규칙을 만든다고 보면 됨)
-    #
-    # - verbose_name="작성자":
-    #   관리자 페이지 / 폼에서 보이는 이름
-    #
-    # - related_name="blogs":
-    #   "유저 입장에서 역참조"할 때 쓰는 이름을 지정
-    #   예) user.blogs.all()  ← 이 유저가 쓴 Blog들을 가져옴
-    #   (related_name 안 주면 기본은 blog_set 같은 이름이 됨)
-    #
-    # ✅ DB에서는 author_id 컬럼이 생김 (작성자 유저의 PK를 저장)
-    # =============================================================================
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -110,49 +25,38 @@ class Blog(models.Model):
         related_name="blogs",
     )
 
-    # =============================================================================
-    # ✅ created_at / updated_at: 생성/수정 시간 자동 기록
-    # -----------------------------------------------------------------------------
-    # - auto_now_add=True:
-    #   "처음 생성될 때"만 현재 시간이 자동 저장됨 (이후 수정해도 안 바뀜)
-    #
-    # - auto_now=True:
-    #   "저장(save)될 때마다" 현재 시간으로 자동 갱신됨
-    #
-    # ✅ 주의:
-    # - 직접 값을 넣어도(auto_now/auto_now_add) Django가 덮어쓰는 편이라
-    #   보통은 자동 기록용으로만 사용
-    # =============================================================================
-    created_at = models.DateTimeField("작성일자", auto_now_add=True)
-    updated_at = models.DateTimeField("수정일자", auto_now=True)
-
-    # =============================================================================
-    # ✅ __str__: 객체를 문자열로 표현하는 방법
-    # -----------------------------------------------------------------------------
-    # - 관리자 페이지 / shell / 디버깅 로그에서 객체가 이 문자열로 보임
-    #
-    # - self.get_category_display():
-    #   choices가 있는 필드는 "저장값" 대신 "표시값"을 얻는 메서드가 자동 생성됨
-    #   예) category="FREE"라도 → get_category_display()는 "자유게시판" 반환
-    #
-    # - title[:10]:
-    #   제목이 길면 앞 10글자만 보여주도록 슬라이싱
-    # =============================================================================
     def __str__(self):
         return f"[{self.get_category_display()}] {self.title[:10]}"
 
-    class Meta:
-        """
-        =============================================================================
-        ✅ Meta 옵션: Django가 이 모델을 어떻게 '보여주고/취급할지'에 대한 설정
-        -----------------------------------------------------------------------------
-        - verbose_name: 관리자 페이지 등에서 단수 이름
-        - verbose_name_plural: 복수 이름(목록 화면 제목)
-        =============================================================================
-        """
+    def get_absolute_url(self):
+        return reverse("blog:detail", kwargs={"blog_pk": self.pk})
 
+    class Meta:
         verbose_name = "블로그"
         verbose_name_plural = "블로그 목록"
+
+
+class Comment(TimestampModel):
+    blog = models.ForeignKey(
+        Blog,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="블로그",
+    )
+    content = models.CharField("본문", max_length=255)
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        verbose_name="작성자",
+    )
+
+    def __str__(self):
+        return f"{self.blog.title} 댓글"
+
+    class Meta:
+        verbose_name = "댓글"
+        verbose_name_plural = "댓글 목록"
+        ordering = ('-created_at', '-id')
 
 
 # models.CASEDE = 같이 삭제
