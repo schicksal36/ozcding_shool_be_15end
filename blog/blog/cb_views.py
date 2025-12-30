@@ -111,7 +111,8 @@ class BlogCreateView(LoginRequiredMixin, CreateView):
 class BlogUpdateView(LoginRequiredMixin, UpdateView):
     model = Blog
     template_name = 'blog_form.html'
-    fields = ('category', 'title', 'content')
+    #fields = ('category', 'title', 'content')
+    form_class = BlogForm 
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -128,6 +129,10 @@ class BlogUpdateView(LoginRequiredMixin, UpdateView):
         context['sub_title'] = '수정'
         context['btn_name'] = '수정'
         return context
+    
+    def form_valid(self, form): 
+        print(form.cleaned_data)
+        return super().form_valid(form) 
 
 
 

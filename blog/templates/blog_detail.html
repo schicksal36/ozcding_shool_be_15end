@@ -26,7 +26,9 @@
 </div>
 
 <hr>
-
+{% if blog.image %}
+<img src="{{ blog.imge.url }}" alt="" class="w-100">
+{% endif %}
 <!-- 본문 (HTML 포함 렌더링) -->
 <p>{{ object.content|safe }}</p>
 
@@ -36,7 +38,7 @@
 <form method="post"
       action="{% url 'blog:comment_create' object.pk %}"
       class="d-flex align-items-center gap-2"
-      style="width: 100%; max-width: 1000px;">
+      style="width: 100%; max-width: 1300px;">
     {% csrf_token %}
     <div class="input-group">
         {{ comment_form.content }}

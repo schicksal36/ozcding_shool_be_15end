@@ -1,6 +1,6 @@
 from django.urls import path
-from blog import cb_views
-
+from blog import cb_views    # ⭐ 핵심 변경
+from blog import  views 
 app_name = 'blog'
 
 urlpatterns = [
@@ -8,8 +8,7 @@ urlpatterns = [
     path('create/', cb_views.BlogCreateView.as_view(), name='create'),
     path('<int:blog_pk>/', cb_views.BlogDetailView.as_view(), name='detail'),
     path('<int:pk>/update/', cb_views.BlogUpdateView.as_view(), name='update'),
+    #path('<int:pk>/update/', views.blog_update, name='update'),
     path('<int:pk>/delete/', cb_views.BlogDeleteView.as_view(), name='delete'),
-    path('comment/create/<int:blog_pk>/',cb_views.CommentCreateView.as_view(),name='comment_create'
-    ),
+    path('comment/create/<int:blog_pk>/',cb_views.CommentCreateView.as_view(),name='comment_create'),
 ]
-

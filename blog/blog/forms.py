@@ -7,7 +7,7 @@ class BlogForm(forms.ModelForm):
     class Meta:
         model = Blog
         # fields = "__all__"
-        fields = ("title", "content")
+        fields = ("title", "content", "category", "image")  
         widgets = {
             # ✅ Summernote 적용
             "content": SummernoteWidget(),

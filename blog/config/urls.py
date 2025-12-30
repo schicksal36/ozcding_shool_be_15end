@@ -57,7 +57,7 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     path("signup/", member_views.sign_up, name="signup"),
     path("login/", member_views.login, name="login"),
-    path('summernote/', include('django_summernote.urls'))
+    path('summernote/', include('django_summernote.urls')),
 
 
 
