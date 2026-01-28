@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<!-- [1] HTML5 문서 선언 -->
+
+<html lang="en">
+<!-- [2] 문서 기본 언어 설정 -->
+
+<head>
+    <meta charset="UTF-8">
+    <!-- [3] UTF-8 문자 인코딩 설정 (한글 깨짐 방지) -->
+
+    <title>Title</title>
+    <!-- [4] 브라우저 탭에 표시되는 문서 제목 -->
+</head>
+
+<body>
+
+    {% for movie in movie_list %}
+    <!-- [5] Django 템플릿 반복문: view에서 전달된 movie_list 순회 -->
+
+        {{ forloop.counter }}위
+        <!-- [6] 반복 순서 번호 출력 (1부터 시작) -->
+
+        <a href="/movie/{{ forloop.cou nter0 }}">
+        <!-- [7] 영화 상세 페이지 링크
+             forloop.counter0: 0부터 시작하는 인덱스 -->
+
+            {{ movie.title }}
+            <!-- [8] movie 객체의 title 속성 출력 -->
+
+        </a>
+        <br>
+        <!-- [9] 줄바꿈 -->
+
+    {% endfor %}
+    <!-- [10] for 반복문 종료 -->
+
+</body>
+</html>
