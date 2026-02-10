@@ -1,0 +1,59 @@
+[project]
+name = "studycalender"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    # 비동기 작업 처리
+    "celery>=5.6.2",                    # 분산 작업 큐 시스템
+    # 암호화 및 보안
+    "cryptography>=46.0.3",              # 암호화 라이브러리
+    "pyjwt>=2.10.1",                     # JWT 토큰 생성 및 검증
+    # 인증 및 권한
+    "dj-rest-auth>=5.0.2",               # Django REST Framework 인증
+    "django-allauth>=65.13.1",           # 소셜 로그인 및 인증
+    # Django 핵심
+    "django==6.0.1",                     # Django 웹 프레임워크
+    "django-celery-beat>=2.1.0",         # Celery 주기적 작업 스케줄러
+    "django-celery-results>=2.6.0",      # Celery 작업 결과 저장
+    "django-cors-headers>=4.9.0",        # CORS 헤더 처리
+    "django-environ==0.12.0",            # 환경 변수 관리
+    "django-filter>=25.2",               # Django 필터링 기능
+    "django-recurrence>=1.14",           # 반복 일정 처리
+    "django-scheduler>=0.10.1",          # 일정 관리 스케줄러
+    "djangorestframework==3.16.1",       # Django REST Framework
+    "djangorestframework-simplejwt>=5.5.1",  # JWT 인증 지원
+    # API 문서화
+    "drf-spectacular==0.29.0",           # OpenAPI/Swagger 문서 생성
+    # 환경 설정
+    "dotenv>=0.9.9",                     # .env 파일 로드
+    # 데이터 시각화
+    "matplotlib>=3.8.0",                 # 그래프 및 차트 생성
+    # 데이터 처리
+    "numpy>=2.4.1",                      # 수치 계산 라이브러리
+    "pandas>=2.2.0",                     # 데이터 분석 및 처리
+    # 이미지 처리
+    "pillow>=10.0.0",                    # 이미지 처리 라이브러리
+    # 데이터베이스
+    "psycopg[binary]>=3.3.2",            # PostgreSQL 어댑터
+    # 날짜/시간 처리
+    "python-dateutil>=2.9.0.post0",      # 날짜/시간 파싱 및 계산
+    "pytz>=2025.2",                      # 시간대 처리
+    # 테스트
+    "pytest>=9.0.2",                     # 테스트 프레임워크
+    "pytest-django>=4.11.1",             # Django 테스트 지원
+    # 캐시 및 메시지 브로커
+    "redis>=7.1.0",                      # Redis 클라이언트
+    # HTTP 요청
+    "requests>=2.32.5",                  # HTTP 라이브러리
+    # 정적 파일 서빙
+    "whitenoise>=6.11.0",                # 정적 파일 서빙 미들웨어
+    "gunicorn>=24.1.1",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.5.1",
+    "ruff>=0.14.14",
+]

@@ -1,0 +1,9 @@
+#studycalender\config\settings\prod.py
+from pathlib import Path
+
+from .base import *  # noqa: F403
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
